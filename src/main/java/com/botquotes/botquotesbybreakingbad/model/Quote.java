@@ -1,5 +1,6 @@
 package com.botquotes.botquotesbybreakingbad.model;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,8 +14,12 @@ public class Quote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
-    private int id;
+    private Long id;
     @EqualsAndHashCode.Exclude
-    private int characterId;
-    private String quotes;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "character_id")
+    private Character character;
+    @Lob
+    @Column(unique = true, nullable = false)
+    private String quote;
 }

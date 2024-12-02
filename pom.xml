@@ -72,6 +72,11 @@
             <artifactId>htmlunit</artifactId>
             <version>2.70.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20150729</version>
+        </dependency>
     </dependencies>
 
     <build>
