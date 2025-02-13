@@ -16,8 +16,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -45,29 +47,18 @@ public class QuoteInitializeClient {
             } catch (ImageNotFoundException e) {
                 logger.warn("Can't find image for {}", breakingBadInfoDto.getAuthor());
             }
-            if (characterModel != null) {
-                Optional<Quote> byQuote = quoteRepository.findByQuote(breakingBadInfoDto.getQuote());
+            if(characterModel != null) {
                 Optional<Character> byCharacterName =
-                        characterRepository.findByCharacterName(breakingBadInfoDto.getAuthor());
-                Quote quote = byQuote.orElseGet(() ->
-                        quoteRepository.save(quoteModel)
-                );
+                        characterRepository.findByCharacterName(characterModel.getCharacterName());
                 Character finalCharacterModel = characterModel;
-                Character character =
-                        byCharacterName.orElseGet(() -> characterRepository.save(finalCharacterModel));
-                if (quote.getCharacter() == null) {
-                    quote.setCharacter(character);
-                    quoteRepository.save(quote);
+                Character character = byCharacterName.orElseGet(() -> characterRepository.save(finalCharacterModel));
+                Set<Quote> quotes = character.getQuotes();
+                if (quotes==null) {
+                    quotes = new HashSet<>();
                 }
-                if (character.getQuotes() == null) {
-                    character.setQuotes(List.of(quote));
-                    characterRepository.save(character);
-                } else if (!character.getQuotes().contains(quote)) {
-                    List<Quote> quotes = character.getQuotes();
-                    quotes.add(quote);
-                    character.setQuotes(quotes);
-                    characterRepository.save(character);
-                }
+                quotes.add(quoteModel);
+                character.setQuotes(quotes);
+                characterRepository.save(character);
             }
         }
     }

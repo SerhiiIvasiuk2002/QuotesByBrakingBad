@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -16,7 +16,7 @@ public class Character { // TODO add character ukr name
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
-    private int id;
+    private Long id;
     @Column(unique = true, nullable = false)
     private String characterName;
     private String ukraineCharacterName;
@@ -24,5 +24,5 @@ public class Character { // TODO add character ukr name
     private String imageByCharacter;
     @OneToMany(mappedBy = "character", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
-    private List<Quote> quotes;
+    private Set<Quote> quotes;
 }
