@@ -32,10 +32,11 @@ public class QuoteInitializeClient {
     private final CharacterRepository characterRepository;
     private final QuoteRepository quoteRepository;
     private final TranslatorUtil translatorUtil;
+    private final Integer MAXSIZE = 255;
 
     @Scheduled(initialDelay = 5000, fixedRate = 3600000)
     private void initializeQuote() {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10; i++) {
             Optional<BreakingBadInfoDto> randomQuote = quoteClient.getRandomQuote();
             BreakingBadInfoDto breakingBadInfoDto = randomQuote.orElseThrow(() -> new RuntimeException("Can't get random quote"));
             Quote quoteModel = quoteMapper.toModel(breakingBadInfoDto.getQuote());
@@ -56,6 +57,11 @@ public class QuoteInitializeClient {
                 if (quotes==null) {
                     quotes = new HashSet<>();
                 }
+                if(quoteModel.getQuote().length()>MAXSIZE ){
+                    quoteModel.setQuote(quoteModel.getQuote().substring(0,MAXSIZE));
+                }
+                quoteModel.setCharacter(character);
+                quoteRepository.save(quoteModel);
                 quotes.add(quoteModel);
                 character.setQuotes(quotes);
                 characterRepository.save(character);

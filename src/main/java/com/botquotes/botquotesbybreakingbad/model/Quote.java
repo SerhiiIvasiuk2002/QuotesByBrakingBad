@@ -19,7 +19,6 @@ public class Quote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "character_id")
     private Character character;
-    @Lob
     @Column(unique = true, nullable = false)
     private String quote;
 }
