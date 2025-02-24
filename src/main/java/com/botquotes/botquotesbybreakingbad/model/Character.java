@@ -20,8 +20,11 @@ public class Character { // TODO add character ukr name
     @Column(unique = true, nullable = false)
     private String characterName;
     private String ukraineCharacterName;
-    @Lob
-    private String imageByCharacter;
+   /* @Lob
+    @Basic(fetch = FetchType.LAZY)
+    private byte[] imageByCharacter;
+
+    */
     @OneToMany(mappedBy = "character", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     private Set<Quote> quotes;

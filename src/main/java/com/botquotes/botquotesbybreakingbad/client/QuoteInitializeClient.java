@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -36,36 +37,40 @@ public class QuoteInitializeClient {
 
     @Scheduled(initialDelay = 5000, fixedRate = 3600000)
     private void initializeQuote() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 4; i++) {
             Optional<BreakingBadInfoDto> randomQuote = quoteClient.getRandomQuote();
             BreakingBadInfoDto breakingBadInfoDto = randomQuote.orElseThrow(() -> new RuntimeException("Can't get random quote"));
             Quote quoteModel = quoteMapper.toModel(breakingBadInfoDto.getQuote());
             Character characterModel = null;
-            try {
-                characterModel = characterMapper.toModel(breakingBadInfoDto.getAuthor(),
-                        translatorUtil.translate(breakingBadInfoDto.getAuthor()),
-                        imageUtil.findImage(breakingBadInfoDto.getAuthor()));
-            } catch (ImageNotFoundException e) {
-                logger.warn("Can't find image for {}", breakingBadInfoDto.getAuthor());
-            }
-            if(characterModel != null) {
-                Optional<Character> byCharacterName =
-                        characterRepository.findByCharacterName(characterModel.getCharacterName());
-                Character finalCharacterModel = characterModel;
-                Character character = byCharacterName.orElseGet(() -> characterRepository.save(finalCharacterModel));
-                Set<Quote> quotes = character.getQuotes();
-                if (quotes==null) {
-                    quotes = new HashSet<>();
-                }
-                if(quoteModel.getQuote().length()>MAXSIZE ){
-                    quoteModel.setQuote(quoteModel.getQuote().substring(0,MAXSIZE));
-                }
-                quoteModel.setCharacter(character);
-                quoteRepository.save(quoteModel);
-                quotes.add(quoteModel);
-                character.setQuotes(quotes);
-                characterRepository.save(character);
-            }
+            characterModel = characterMapper.toModel(breakingBadInfoDto.getAuthor(), translatorUtil.translate(breakingBadInfoDto.getAuthor()));
+            CheckCharacterIsNotNullAndSave(characterModel,quoteModel);
+        }
+    }
+    private void CheckCharacterIsNotNullAndSave(Character character, Quote quote) {
+        if(character != null) {
+            Optional<Character> byCharacterName =
+                    characterRepository.findByCharacterName(character.getCharacterName());
+            Character finalCharacterModel = character;
+            Character characterModel = byCharacterName.orElseGet(() -> characterRepository.save(finalCharacterModel));
+            Set <Quote> quotes = quoteRepository.findQuotesByCharacterName(characterModel.getCharacterName());
+            CheckQuoteIsEmpty(quotes);
+            CheckQuoteLength(quote);
+            quote.setCharacter(characterModel);
+            quoteRepository.save(quote);
+            quotes.add(quote);
+            characterModel.setQuotes(quotes);
+            characterRepository.save(characterModel);
+        }
+    }
+
+    private void CheckQuoteIsEmpty(Set<Quote> q){
+        if (q==null || q.isEmpty()) {
+            q = new HashSet<>();
+        }
+    }
+    private void CheckQuoteLength(Quote quote){
+        if(quote.getQuote().length()>MAXSIZE ){
+            quote.setQuote(quote.getQuote().substring(0,MAXSIZE));
         }
     }
 }

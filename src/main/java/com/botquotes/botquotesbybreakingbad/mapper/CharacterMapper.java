@@ -5,5 +5,5 @@ import com.botquotes.botquotesbybreakingbad.model.Character;
 
 @Mapper(config = MapperConfig.class)
 public interface CharacterMapper {
-    Character toModel(String characterName,String ukraineCharacterName, String imageByCharacter);
+    Character toModel(String characterName,String ukraineCharacterName);
 }
